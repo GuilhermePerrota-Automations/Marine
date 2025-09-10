@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecossistema Marinho</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to bottom, #fdf6ec 0%, #7eb3ce 100%);
+    overflow-x: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  .box {
+    background-color: rgba(255, 245, 220, 0.95);
+    padding: 25px;
+    max-width: 500px;
+    text-align: center;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 10;
+    margin: 15px;
+    animation: fadeIn 0.6s forwards;
+    border: 2px solid #0077b6;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px);}
+    to { opacity: 1; transform: translateY(0);}
+  }
+
+  .buttons { margin-top: 15px; display: flex; justify-content: space-between; }
+
+  button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+    background-color: #00b4d8;
+    color: #fff;
+  }
+
+  button:hover { opacity: 0.8; }
+
+  .wave-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 250px;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  svg.wave {
+    width: 200%;
+    height: 200px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    animation: waveMove 8s linear infinite;
+  }
+
+  svg.wave:nth-child(2) { animation-duration: 10s; opacity: 0.7; }
+  svg.wave:nth-child(3) { animation-duration: 12s; opacity: 0.5; }
+
+  @keyframes waveMove { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  canvas { max-width: 100%; margin-top: 15px; }
+
+  #pollBox, #chartBox { display: none; }
+
+  /* Fundo do mar: bolhas, algas e peixes */
+  .bubble { 
+    position: absolute; border-radius: 50%; background: #fff; width: 10px; height: 10px; 
+    opacity: 0.6; animation: rise 6s linear infinite;
+  }
+
+  @keyframes rise { 0% { transform: translateY(0) translateX(0); opacity:0.6;} 50%{opacity:0.9;} 100% { transform: translateY(-500px) translateX(20px); opacity:0;} }
+
+  .sea-element { position: absolute; z-index: 1; }
+
+  /* Peixes e tubarão desenhados em CSS */
+  .fish, .shark {
+    position: absolute;
+    z-index: 2;
+    border-radius: 50%;
+    background: linear-gradient(90deg, #0077b6, #00b4d8);
+  }
+
+  .fish { width: 50px; height: 20px; clip-path: polygon(0% 50%, 70% 0%, 100% 50%, 70% 100%); }
+  .shark { width: 120px; height: 40px; background: linear-gradient(90deg, #023e8a, #0077b6); clip-path: polygon(0% 50%, 60% 0%, 100% 20%, 100% 80%, 60% 100%); }
+
+  /* Algas simples */
+  .alga {
+    position: absolute;
+    bottom: 0;
+    width: 10px;
+    height: 60px;
+    background: linear-gradient(to top, #0077b6, #00b4d8);
+    border-radius: 10px;
+    animation: sway 2s infinite alternate;
+  }
+
+  @keyframes sway { from { transform: rotate(-5deg); } to { transform: rotate(5deg);} }
+</style>
+</head>
+<body>
+
+<!-- Box de Texto Principal -->
+<div class="box" id="textBox">
+  <p id="text"></p>
+  <div class="buttons">
+    <button id="prev">Voltar</button>
+    <button id="next">Avançar</button>
+  </div>
+</div>
+
+<!-- Box de Pergunta -->
+<div class="box" id="pollBox">
+  <p>Você acha que o número de animais marinhos mortos de 2024 para 2025 aumentou?</p>
+  <button id="pollYes">Aumentou</button>
+  <button id="pollNo">Diminuiu</button>
+</div>
+
+<!-- Box de Gráfico -->
+<div class="box" id="chartBox">
+  <canvas id="chart"></canvas>
+  <p id="result" style="font-weight:bold;"></p>
+  <button id="backChart">Voltar</button>
+</div>
+
+<!-- Ondas -->
+<div class="wave-container">
+  <svg class="wave" viewBox="0 0 1200 200" preserveAspectRatio="none"><path d="M0,100 C300,200 900,0 1200,100" stroke="#0077b6" stroke-width="3" fill="none"/></svg>
+  <svg class="wave" viewBox="0 0 1200 200" preserveAspectRatio="none"><path d="M0,120 C300,220 900,20 1200,120" stroke="#00b4d8" stroke-width="3" fill="none"/></svg>
+  <svg class="wave" viewBox="0 0 1200 200" preserveAspectRatio="none"><path d="M0,140 C300,240 900,40 1200,140" stroke="#90e0ef" stroke-width="3" fill="none"/></svg>
+</div>
+
+<!-- Bolhas -->
+<div class="bubble sea-element" style="left:20%; bottom:0;"></div>
+<div class="bubble sea-element" style="left:40%; bottom:0; animation-delay:2s;"></div>
+<div class="bubble sea-element" style="left:60%; bottom:0; animation-delay:4s;"></div>
+
+<!-- Algas -->
+<div class="alga" style="left:10%;"></div>
+<div class="alga" style="left:25%; height:80px;"></div>
+<div class="alga" style="left:70%; height:50px;"></div>
+
+<!-- Peixes e tubarão -->
+<div class="fish" id="fish1"></div>
+<div class="fish" id="fish2"></div>
+<div class="fish" id="fish3"></div>
+<div class="shark" id="shark"></div>
+
+<script>
+const texts = [
+"O ecossistema marinho é um ambiente cheio de vida, onde habitam diversas espécies marinhas, como peixes, corais, algas e muitos outros seres que dependem uns dos outros para sobreviver. A poluição, como plástico, óleo e produtos químicos, contamina a água, prejudica os animais e destrói esses habitats, colocando todo o equilíbrio em risco. Por isso, cuidar do mar é cuidar da vida!",
+"Proteger o ecossistema marinho significa reduzir o lixo, evitar o desperdício de água, reciclar e respeitar a natureza. Quando preservamos os oceanos, garantimos não apenas a sobrevivência dos animais marinhos, mas também a nossa própria qualidade de vida. O mar é fonte de alimento, oxigênio e equilíbrio para o planeta. Cada pequena atitude conta para manter essa riqueza viva para as futuras gerações.",
+"A poluição por plástico nos oceanos representa um perigo cada vez maior, que ultrapassa o impacto sobre os animais marinhos isoladamente, prejudicando o balanço de todo o ambiente marinho.",
+"Para purificar os oceanos, hoje em dia contamos com a ajuda da Ocean Cleanup, uma empresa fundada em 2013 que tem como meta limpar os oceanos com o uso de robôs que recolhem o plástico na superfície.",
+"O plástico nos oceanos ameaça a vida marinha e a saúde humana. Tecnologias como barreiras de coleta, sensores e reciclagem avançada ajudam a reduzir e remover esses resíduos.",
+"Os plásticos se acumulam nos oceanos, afetando a vida aquática e comprometendo toda a cadeia alimentar. A acidificação dos oceanos também coloca em risco corais e moluscos, essenciais para os ecossistemas marinhos."
+];
+
+let currentIndex = 0;
+const textEl = document.getElementById("text");
+const nextBtn = document.getElementById("next");
+const prevBtn = document.getElementById("prev");
+const pollBox = document.getElementById("pollBox");
+const pollYes = document.getElementById("pollYes");
+const pollNo = document.getElementById("pollNo");
+const chartBox = document.getElementById("chartBox");
+const chartCanvas = document.getElementById("chart");
+const resultText = document.getElementById("result");
+const backChart = document.getElementById("backChart");
+
+function showText(index) {
+  textEl.textContent = texts[index];
+  if(index === texts.length - 1){
+    document.getElementById("textBox").style.display = "none";
+    pollBox.style.display = "block";
+  }
+}
+
+nextBtn.addEventListener("click", () => { if(currentIndex < texts.length - 1) { currentIndex++; showText(currentIndex); } });
+prevBtn.addEventListener("click", () => { if(currentIndex > 0) { currentIndex--; showText(currentIndex); } });
+pollYes.addEventListener("click", () => showChart(true));
+pollNo.addEventListener("click", () => showChart(false));
+backChart.addEventListener("click", () => { chartBox.style.display = "none"; document.getElementById("textBox").style.display = "block"; });
+
+function showChart(isCorrect){
+  pollBox.style.display = "none";
+  chartBox.style.display = "block";
+  resultText.textContent = isCorrect ? "Parabéns! Você acertou!" : "Opa, que pena, infelizmente você errou.";
+  const data = { labels: ['2024','2025'], datasets:[{label:'Animais Marinhos Mortos Por Semana',data:[1500,2200], borderColor:'#0077b6', backgroundColor:'rgba(0,119,182,0.2)', fill:true, tension:0.4}] };
+  const config = { type:'line', data:data, options:{responsive:true, plugins:{legend:{display:true}, title:{display:true,text:'Número de animais marinhos mortos'}}, scales:{y:{beginAtZero:true}}}};
+  new Chart(chartCanvas, config);
+}
+
+showText(currentIndex);
+
+// Função para animação contínua de múltiplos peixes
+function animateFish(fish, duration, top) {
+  fish.style.top = top + 'px';
+  fish.style.position = 'absolute';
+  function move() {
+    fish.style.left = '-100px';
+    fish.style.transition = `transform ${duration}s linear`;
+    setTimeout(()=> { fish.style.transform = `translateX(${window.innerWidth + 100}px)`; },50);
+    setTimeout(move, duration*1000);
+  }
+  move();
+}
+
+// Animando peixes e tubarão
+animateFish(document.getElementById('fish1'), 12, 60);
+animateFish(document.getElementById('fish2'), 15, 120);
+animateFish(document.getElementById('fish3'), 10, 200);
+animateFish(document.getElementById('shark'), 25, 150);
+</script>
+</body>
+</html>
